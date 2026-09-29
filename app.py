@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request, send_from_directory
 
-from database.db import save_scan
+from database.db import get_scan_history, save_scan
 from services.security_scanner import scan_domain
+
 
 app = Flask(__name__)
 
@@ -53,6 +54,25 @@ def scan():
         return jsonify({
             "success": False,
             "error": "An unexpected error occurred."
+        }), 500
+
+
+@app.route("/api/scans", methods=["GET"])
+def get_scans():
+    try:
+        scans = get_scan_history()
+
+        return jsonify({
+            "success": True,
+            "scans": scans
+        })
+
+    except Exception as error:
+        print("Error:", error)
+
+        return jsonify({
+            "success": False,
+            "error": "Could not load scan history."
         }), 500
 
 

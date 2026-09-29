@@ -34,3 +34,32 @@ def save_scan(domain, risk_score, risk_level):
     finally:
         cursor.close()
         connection.close()
+
+
+def get_scan_history():
+    connection = get_db_connection()
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+
+        query = """
+            SELECT id, domain, risk_score, risk_level, scanned_at
+            FROM scans
+            ORDER BY scanned_at DESC
+        """
+
+        cursor.execute(query)
+
+        scans = cursor.fetchall()
+
+        for scan in scans:
+            if scan["scanned_at"]:
+                scan["scanned_at"] = scan["scanned_at"].strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+
+        return scans
+
+    finally:
+        cursor.close()
+        connection.close()

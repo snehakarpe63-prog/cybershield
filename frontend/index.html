@@ -1,161 +1,670 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberShield</title>
+
+    <title>CyberShield Dashboard</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 40px;
-            background: #f4f7fb;
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            color: #1f2937;
+        }
+
+        .navbar {
+            background: #111827;
+            color: white;
+            padding: 18px 40px;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .navbar p {
+            margin: 5px 0 0;
+            color: #cbd5e1;
         }
 
         .container {
-            max-width: 900px;
-            margin: auto;
-        }
-
-        h1 {
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .scan-box {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        }
-
-        input {
-            width: 70%;
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-left: 8px;
-        }
-
-        #message {
-            margin-top: 20px;
-            font-weight: bold;
-        }
-
-        #result {
-            margin-top: 25px;
+            max-width: 1150px;
+            margin: 30px auto;
+            padding: 0 20px;
         }
 
         .card {
             background: white;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .scan-row {
+            display: flex;
+            gap: 10px;
             margin-top: 15px;
+        }
+
+        input {
+            flex: 1;
+            padding: 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #111827;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .result-item {
+            padding: 18px;
+            border: 1px solid #e2e8f0;
             border-radius: 10px;
-            border: 1px solid #ddd;
+            background: #f8fafc;
+        }
+
+        .result-item strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .good {
+            color: #166534;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: #92400e;
+            font-weight: bold;
+        }
+
+        .bad {
+            color: #991b1b;
+            font-weight: bold;
+        }
+
+        .history-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 12px;
+            background: #f8fafc;
+        }
+
+        .history-item strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .empty {
+            color: #64748b;
         }
 
         pre {
             white-space: pre-wrap;
-            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        @media (max-width: 900px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 650px) {
+            .scan-row {
+                flex-direction: column;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
 
-<div class="container">
-
-    <h1>CyberShield</h1>
-    <div class="subtitle">
-        Defensive website security analysis
+    <div class="navbar">
+        <h1>CyberShield</h1>
+        <p>Defensive Website Security Analysis Dashboard</p>
     </div>
 
-    <div class="scan-box">
-        <h2>Scan a Domain</h2>
+    <div class="container">
 
-        <input
-            type="text"
-            id="domain"
-            placeholder="Enter authorized domain"
-        >
+        <!-- Scan -->
+        <div class="card">
 
-        <button onclick="scanDomain()">
-            Scan
-        </button>
+            <h2>New Security Scan</h2>
 
-        <div id="message"></div>
+            <p>
+                Enter a domain that you own or are authorized to analyze.
+            </p>
+
+            <div class="scan-row">
+
+                <input
+                    type="text"
+                    id="domain"
+                    placeholder="example.com"
+                >
+
+                <button onclick="scanDomain()">
+                    Start Scan
+                </button>
+
+            </div>
+
+            <div id="message"></div>
+
+        </div>
+
+
+        <!-- Statistics -->
+        <div class="stats">
+
+            <div class="stat-card">
+                <h3>Security Score</h3>
+                <div class="value" id="score">--</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>Risk Level</h3>
+                <div class="value" id="risk">--</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>HTTPS</h3>
+                <div class="value" id="https">--</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>SSL/TLS</h3>
+                <div class="value" id="ssl">--</div>
+            </div>
+
+        </div>
+
+
+        <!-- Current Scan -->
+        <div class="card">
+
+            <h2>Current Scan Details</h2>
+
+            <div id="result">
+
+                <p class="empty">
+                    No scan performed yet.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- Scan History -->
+        <div class="card">
+
+            <h2>Scan History</h2>
+
+            <button onclick="loadHistory()">
+                Refresh History
+            </button>
+
+            <div id="history">
+
+                <p class="empty">
+                    Loading history...
+                </p>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <div id="result"></div>
-
-</div>
 
 <script>
+
 async function scanDomain() {
 
-    const domain = document.getElementById("domain").value.trim();
-    const message = document.getElementById("message");
-    const result = document.getElementById("result");
+    const domain =
+        document.getElementById("domain").value.trim();
+
+    const message =
+        document.getElementById("message");
+
+    const result =
+        document.getElementById("result");
+
 
     if (!domain) {
-        message.textContent = "Please enter a domain.";
+
+        message.textContent =
+            "Please enter a domain.";
+
         return;
     }
 
-    message.textContent = "Scanning...";
-    result.innerHTML = "";
+
+    message.textContent =
+        "Scanning...";
+
+    result.innerHTML =
+        "<p>CyberShield is analyzing the domain...</p>";
+
 
     try {
 
         const response = await fetch("/api/scan", {
+
             method: "POST",
+
             headers: {
                 "Content-Type": "application/json"
             },
+
             body: JSON.stringify({
                 domain: domain
             })
+
         });
+
 
         const data = await response.json();
 
+
         if (!response.ok) {
-            message.textContent = data.error || "Scan failed.";
+
+            message.textContent =
+                data.error || "Scan failed.";
+
             return;
         }
 
-        message.textContent = "Scan completed successfully.";
+
+        const scan = data.result;
+
+
+        message.textContent =
+            "Scan completed successfully.";
+
+
+        // Dashboard statistics
+
+        document.getElementById("score").textContent =
+            scan.risk.score;
+
+        document.getElementById("risk").textContent =
+            scan.risk.level;
+
+        document.getElementById("https").textContent =
+            scan.http.https_available ? "Yes" : "No";
+
+        document.getElementById("ssl").textContent =
+            scan.ssl.valid_connection ? "Valid" : "Not verified";
+
+
+        // Current result
+
+        const headers =
+            scan.http.security_headers;
+
 
         result.innerHTML = `
-            <div class="card">
-                <h2>Scan Result</h2>
-                <pre>${JSON.stringify(data.result, null, 2)}</pre>
+
+            <div class="result-grid">
+
+                <div class="result-item">
+
+                    <strong>Domain</strong>
+
+                    ${scan.domain}
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <strong>HTTP Status</strong>
+
+                    ${scan.http.status_code ?? "Not available"}
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <strong>Final URL</strong>
+
+                    ${scan.http.final_url || "Not available"}
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <strong>IPv4 Addresses</strong>
+
+                    ${
+                        scan.dns.ipv4_addresses.length > 0
+                            ? scan.dns.ipv4_addresses.join(", ")
+                            : "Not found"
+                    }
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <strong>Security Headers</strong>
+
+                    <p class="${
+                        headers["Strict-Transport-Security"]
+                            ? "good"
+                            : "warning"
+                    }">
+
+                        Strict-Transport-Security:
+                        ${
+                            headers["Strict-Transport-Security"]
+                                ? "Present"
+                                : "Missing"
+                        }
+
+                    </p>
+
+
+                    <p class="${
+                        headers["Content-Security-Policy"]
+                            ? "good"
+                            : "warning"
+                    }">
+
+                        Content-Security-Policy:
+                        ${
+                            headers["Content-Security-Policy"]
+                                ? "Present"
+                                : "Missing"
+                        }
+
+                    </p>
+
+
+                    <p class="${
+                        headers["X-Content-Type-Options"]
+                            ? "good"
+                            : "warning"
+                    }">
+
+                        X-Content-Type-Options:
+                        ${
+                            headers["X-Content-Type-Options"]
+                                ? "Present"
+                                : "Missing"
+                        }
+
+                    </p>
+
+
+                    <p class="${
+                        headers["X-Frame-Options"]
+                            ? "good"
+                            : "warning"
+                    }">
+
+                        X-Frame-Options:
+                        ${
+                            headers["X-Frame-Options"]
+                                ? "Present"
+                                : "Missing"
+                        }
+
+                    </p>
+
+
+                    <p class="${
+                        headers["Referrer-Policy"]
+                            ? "good"
+                            : "warning"
+                    }">
+
+                        Referrer-Policy:
+                        ${
+                            headers["Referrer-Policy"]
+                                ? "Present"
+                                : "Missing"
+                        }
+
+                    </p>
+
+
+                    <p class="${
+                        headers["Permissions-Policy"]
+                            ? "good"
+                            : "warning"
+                    }">
+
+                        Permissions-Policy:
+                        ${
+                            headers["Permissions-Policy"]
+                                ? "Present"
+                                : "Missing"
+                        }
+
+                    </p>
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <strong>Risk Reasons</strong>
+
+                    ${
+                        scan.risk.reasons.length > 0
+                            ? scan.risk.reasons
+                                .map(reason => `<p>• ${reason}</p>`)
+                                .join("")
+                            : "<p>No risk reasons reported.</p>"
+                    }
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <strong>SSL Certificate Issuer</strong>
+
+                    <p>
+                        ${scan.ssl.issuer || "Not available"}
+                    </p>
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <strong>SSL Certificate Subject</strong>
+
+                    <p>
+                        ${scan.ssl.subject || "Not available"}
+                    </p>
+
+                </div>
+
             </div>
+
         `;
 
-    } catch (error) {
+
+        // Refresh history
+
+        loadHistory();
+
+    }
+
+
+    catch (error) {
 
         message.textContent =
             "Could not connect to CyberShield backend.";
 
         console.error(error);
+
     }
+
 }
+
+
+async function loadHistory() {
+
+    const history =
+        document.getElementById("history");
+
+
+    try {
+
+        const response =
+            await fetch("/api/scans");
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            history.innerHTML =
+                `<p class="empty">
+                    ${data.error || "Could not load history."}
+                 </p>`;
+
+            return;
+        }
+
+
+        if (data.scans.length === 0) {
+
+            history.innerHTML =
+                `<p class="empty">
+                    No scans found.
+                 </p>`;
+
+            return;
+        }
+
+
+        history.innerHTML =
+            data.scans.map(scan => `
+
+                <div class="history-item">
+
+                    <strong>
+                        ${scan.domain}
+                    </strong>
+
+                    <div>
+                        Risk Score:
+                        ${scan.risk_score}
+                    </div>
+
+                    <div>
+                        Risk Level:
+                        ${scan.risk_level}
+                    </div>
+
+                    <div>
+                        Scanned At:
+                        ${scan.scanned_at}
+                    </div>
+
+                </div>
+
+            `).join("");
+
+    }
+
+
+    catch (error) {
+
+        history.innerHTML =
+            `<p class="empty">
+                Could not connect to backend.
+             </p>`;
+
+        console.error(error);
+
+    }
+
+}
+
+
+// Load history automatically
+loadHistory();
+
 </script>
 
 </body>
+
 </html>
