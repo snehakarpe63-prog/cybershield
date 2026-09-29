@@ -11,6 +11,7 @@ from flask import (
 
 from database.db import (
     create_user,
+    get_scan_by_id,
     get_scan_history,
     get_user_by_email,
     save_scan,
@@ -21,10 +22,17 @@ from services.auth import (
     verify_password,
 )
 
-from services.security_scanner import scan_domain
+from services.recommendations import (
+    build_recommendations,
+)
+
+from services.security_scanner import (
+    scan_domain,
+)
 
 
 load_dotenv()
+
 
 app = Flask(__name__)
 
@@ -33,11 +41,15 @@ app.secret_key = os.getenv("SECRET_KEY")
 
 @app.route("/")
 def home():
-    return send_from_directory("frontend", "index.html")
+    return send_from_directory(
+        "frontend",
+        "index.html"
+    )
 
 
 @app.route("/api/register", methods=["POST"])
 def register():
+
     data = request.get_json(silent=True) or {}
 
     name = data.get("name", "").strip()
@@ -63,6 +75,7 @@ def register():
         }), 400
 
     try:
+
         existing_user = get_user_by_email(email)
 
         if existing_user:
@@ -81,10 +94,11 @@ def register():
 
         return jsonify({
             "success": True,
-            "message": "Registration successful. Please log in."
+            "message": "Registration successful. Please login."
         }), 201
 
     except Exception as error:
+
         print("Registration error:", error)
 
         return jsonify({
@@ -95,6 +109,7 @@ def register():
 
 @app.route("/api/login", methods=["POST"])
 def login():
+
     data = request.get_json(silent=True) or {}
 
     email = data.get("email", "").strip().lower()
@@ -107,6 +122,7 @@ def login():
         }), 400
 
     try:
+
         user = get_user_by_email(email)
 
         if not user:
@@ -139,6 +155,7 @@ def login():
         })
 
     except Exception as error:
+
         print("Login error:", error)
 
         return jsonify({
@@ -149,6 +166,7 @@ def login():
 
 @app.route("/api/logout", methods=["POST"])
 def logout():
+
     session.clear()
 
     return jsonify({
@@ -159,7 +177,9 @@ def logout():
 
 @app.route("/api/me", methods=["GET"])
 def current_user():
+
     if "user_id" not in session:
+
         return jsonify({
             "logged_in": False
         })
@@ -176,7 +196,9 @@ def current_user():
 
 @app.route("/api/scan", methods=["POST"])
 def scan():
+
     if "user_id" not in session:
+
         return jsonify({
             "success": False,
             "error": "Please log in before starting a scan."
@@ -187,37 +209,53 @@ def scan():
     domain = data.get("domain")
 
     if not domain:
+
         return jsonify({
             "success": False,
             "error": "Please provide a domain."
         }), 400
 
     try:
+
         result = scan_domain(domain)
 
         risk_score = result["risk"]["score"]
         risk_level = result["risk"]["level"]
 
-        save_scan(
+        recommendations = build_recommendations(
+            result
+        )
+
+        complete_report = {
+            "result": result,
+            "recommendations": recommendations
+        }
+
+        scan_id = save_scan(
             session["user_id"],
             result["domain"],
             risk_score,
-            risk_level
+            risk_level,
+            complete_report
         )
 
         return jsonify({
             "success": True,
+            "scan_id": scan_id,
             "result": result,
+            "recommendations": recommendations,
             "message": "Scan completed and saved successfully."
         })
 
     except ValueError as error:
+
         return jsonify({
             "success": False,
             "error": str(error)
         }), 400
 
     except Exception as error:
+
         print("Scan error:", error)
 
         return jsonify({
@@ -228,14 +266,19 @@ def scan():
 
 @app.route("/api/scans", methods=["GET"])
 def get_scans():
+
     if "user_id" not in session:
+
         return jsonify({
             "success": False,
             "error": "Please log in."
         }), 401
 
     try:
-        scans = get_scan_history(session["user_id"])
+
+        scans = get_scan_history(
+            session["user_id"]
+        )
 
         return jsonify({
             "success": True,
@@ -243,11 +286,51 @@ def get_scans():
         })
 
     except Exception as error:
+
         print("History error:", error)
 
         return jsonify({
             "success": False,
             "error": "Could not load scan history."
+        }), 500
+
+
+@app.route("/api/scans/<int:scan_id>", methods=["GET"])
+def get_report(scan_id):
+
+    if "user_id" not in session:
+
+        return jsonify({
+            "success": False,
+            "error": "Please log in."
+        }), 401
+
+    try:
+
+        scan = get_scan_by_id(
+            session["user_id"],
+            scan_id
+        )
+
+        if not scan:
+
+            return jsonify({
+                "success": False,
+                "error": "Scan report not found."
+            }), 404
+
+        return jsonify({
+            "success": True,
+            "scan": scan
+        })
+
+    except Exception as error:
+
+        print("Report error:", error)
+
+        return jsonify({
+            "success": False,
+            "error": "Could not load report."
         }), 500
 
 
