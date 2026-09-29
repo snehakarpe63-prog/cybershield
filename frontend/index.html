@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>CyberShield Dashboard</title>
+    <title>CyberShield</title>
 
     <style>
         * {
@@ -23,16 +23,19 @@
             background: #111827;
             color: white;
             padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .navbar h1 {
             margin: 0;
-            font-size: 24px;
         }
 
-        .navbar p {
-            margin: 5px 0 0;
-            color: #cbd5e1;
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
         .container {
@@ -49,22 +52,40 @@
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
         }
 
-        .scan-row {
+        .auth-container {
+            max-width: 450px;
+            margin: 60px auto;
+        }
+
+        .tabs {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tabs button {
+            flex: 1;
+            border-radius: 0;
+        }
+
+        .tabs button:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+
+        .tabs button:last-child {
+            border-radius: 0 8px 8px 0;
         }
 
         input {
-            flex: 1;
-            padding: 14px;
+            width: 100%;
+            padding: 13px;
+            margin-bottom: 12px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             font-size: 16px;
         }
 
         button {
-            padding: 14px 24px;
+            padding: 12px 20px;
             border: none;
             border-radius: 8px;
             background: #111827;
@@ -77,9 +98,22 @@
             opacity: 0.9;
         }
 
-        #message {
+        .logout-button {
+            background: #7f1d1d;
+        }
+
+        .message {
             margin-top: 15px;
             font-weight: bold;
+        }
+
+        .scan-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .scan-row input {
+            margin-bottom: 0;
         }
 
         .stats {
@@ -97,12 +131,11 @@
 
         .stat-card h3 {
             margin: 0 0 10px;
-            font-size: 14px;
             color: #64748b;
         }
 
-        .stat-card .value {
-            font-size: 24px;
+        .value {
+            font-size: 25px;
             font-weight: bold;
         }
 
@@ -112,13 +145,19 @@
             gap: 15px;
         }
 
-        .result-item {
+        .result-item,
+        .history-item {
             padding: 18px;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
             background: #f8fafc;
         }
 
+        .history-item {
+            margin-top: 12px;
+        }
+
+        .history-item strong,
         .result-item strong {
             display: block;
             margin-bottom: 8px;
@@ -134,50 +173,37 @@
             font-weight: bold;
         }
 
-        .bad {
-            color: #991b1b;
-            font-weight: bold;
-        }
-
-        .history-item {
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 16px;
-            margin-top: 12px;
-            background: #f8fafc;
-        }
-
-        .history-item strong {
-            display: block;
-            margin-bottom: 8px;
-        }
-
         .empty {
             color: #64748b;
         }
 
-        pre {
-            white-space: pre-wrap;
-            word-break: break-word;
+        .hidden {
+            display: none;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 800px) {
             .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            .navbar {
+                padding: 15px 20px;
+            }
         }
 
-        @media (max-width: 650px) {
+        @media (max-width: 600px) {
+            .stats,
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+
             .scan-row {
                 flex-direction: column;
             }
 
-            .stats {
-                grid-template-columns: 1fr;
-            }
-
-            .result-grid {
-                grid-template-columns: 1fr;
+            .user-area {
+                flex-direction: column;
+                align-items: flex-end;
             }
         }
     </style>
@@ -185,97 +211,215 @@
 
 <body>
 
-    <div class="navbar">
-        <h1>CyberShield</h1>
-        <p>Defensive Website Security Analysis Dashboard</p>
-    </div>
+    <!-- Authentication -->
+    <div id="authPage" class="auth-container">
 
-    <div class="container">
-
-        <!-- Scan -->
         <div class="card">
 
-            <h2>New Security Scan</h2>
+            <h1>CyberShield</h1>
 
             <p>
-                Enter a domain that you own or are authorized to analyze.
+                Defensive Website Security Analysis
             </p>
 
-            <div class="scan-row">
+            <div class="tabs">
 
-                <input
-                    type="text"
-                    id="domain"
-                    placeholder="example.com"
-                >
+                <button onclick="showRegister()">
+                    Register
+                </button>
 
-                <button onclick="scanDomain()">
-                    Start Scan
+                <button onclick="showLogin()">
+                    Login
                 </button>
 
             </div>
 
-            <div id="message"></div>
+
+            <!-- Login -->
+
+            <div id="loginForm">
+
+                <h2>Login</h2>
+
+                <input
+                    type="email"
+                    id="loginEmail"
+                    placeholder="Email"
+                >
+
+                <input
+                    type="password"
+                    id="loginPassword"
+                    placeholder="Password"
+                >
+
+                <button onclick="loginUser()">
+                    Login
+                </button>
+
+                <div
+                    id="loginMessage"
+                    class="message"
+                ></div>
+
+            </div>
+
+
+            <!-- Register -->
+
+            <div id="registerForm" class="hidden">
+
+                <h2>Create Account</h2>
+
+                <input
+                    type="text"
+                    id="registerName"
+                    placeholder="Full name"
+                >
+
+                <input
+                    type="email"
+                    id="registerEmail"
+                    placeholder="Email"
+                >
+
+                <input
+                    type="password"
+                    id="registerPassword"
+                    placeholder="Password (minimum 8 characters)"
+                >
+
+                <button onclick="registerUser()">
+                    Create Account
+                </button>
+
+                <div
+                    id="registerMessage"
+                    class="message"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Dashboard -->
+
+    <div id="dashboard" class="hidden">
+
+        <div class="navbar">
+
+            <div>
+                <h1>CyberShield</h1>
+            </div>
+
+            <div class="user-area">
+
+                <span id="welcomeUser"></span>
+
+                <button
+                    class="logout-button"
+                    onclick="logoutUser()"
+                >
+                    Logout
+                </button>
+
+            </div>
 
         </div>
 
 
-        <!-- Statistics -->
-        <div class="stats">
+        <div class="container">
 
-            <div class="stat-card">
-                <h3>Security Score</h3>
-                <div class="value" id="score">--</div>
-            </div>
+            <!-- Scan -->
 
-            <div class="stat-card">
-                <h3>Risk Level</h3>
-                <div class="value" id="risk">--</div>
-            </div>
+            <div class="card">
 
-            <div class="stat-card">
-                <h3>HTTPS</h3>
-                <div class="value" id="https">--</div>
-            </div>
+                <h2>New Security Scan</h2>
 
-            <div class="stat-card">
-                <h3>SSL/TLS</h3>
-                <div class="value" id="ssl">--</div>
-            </div>
-
-        </div>
-
-
-        <!-- Current Scan -->
-        <div class="card">
-
-            <h2>Current Scan Details</h2>
-
-            <div id="result">
-
-                <p class="empty">
-                    No scan performed yet.
+                <p>
+                    Enter a domain that you own or are authorized to analyze.
                 </p>
 
+                <div class="scan-row">
+
+                    <input
+                        type="text"
+                        id="domain"
+                        placeholder="example.com"
+                    >
+
+                    <button onclick="scanDomain()">
+                        Start Scan
+                    </button>
+
+                </div>
+
+                <div
+                    id="scanMessage"
+                    class="message"
+                ></div>
+
             </div>
 
-        </div>
+
+            <!-- Stats -->
+
+            <div class="stats">
+
+                <div class="stat-card">
+                    <h3>Risk Score</h3>
+                    <div id="score" class="value">--</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Risk Level</h3>
+                    <div id="risk" class="value">--</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>HTTPS</h3>
+                    <div id="https" class="value">--</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>SSL/TLS</h3>
+                    <div id="ssl" class="value">--</div>
+                </div>
+
+            </div>
 
 
-        <!-- Scan History -->
-        <div class="card">
+            <!-- Result -->
 
-            <h2>Scan History</h2>
+            <div class="card">
 
-            <button onclick="loadHistory()">
-                Refresh History
-            </button>
+                <h2>Current Scan Details</h2>
 
-            <div id="history">
+                <div id="result">
 
-                <p class="empty">
-                    Loading history...
-                </p>
+                    <p class="empty">
+                        No scan performed yet.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- History -->
+
+            <div class="card">
+
+                <h2>My Scan History</h2>
+
+                <button onclick="loadHistory()">
+                    Refresh History
+                </button>
+
+                <div id="history"></div>
 
             </div>
 
@@ -286,16 +430,225 @@
 
 <script>
 
+function showRegister() {
+
+    document
+        .getElementById("registerForm")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("loginForm")
+        .classList.add("hidden");
+}
+
+
+function showLogin() {
+
+    document
+        .getElementById("loginForm")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("registerForm")
+        .classList.add("hidden");
+}
+
+
+async function registerUser() {
+
+    const name =
+        document.getElementById("registerName").value.trim();
+
+    const email =
+        document.getElementById("registerEmail").value.trim();
+
+    const password =
+        document.getElementById("registerPassword").value;
+
+    const message =
+        document.getElementById("registerMessage");
+
+
+    try {
+
+        const response = await fetch(
+            "/api/register",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    password
+                })
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            message.textContent = data.error;
+
+            return;
+        }
+
+
+        message.textContent =
+            "Registration successful. Please login.";
+
+        showLogin();
+
+    } catch (error) {
+
+        message.textContent =
+            "Could not connect to the server.";
+
+    }
+}
+
+
+async function loginUser() {
+
+    const email =
+        document.getElementById("loginEmail").value.trim();
+
+    const password =
+        document.getElementById("loginPassword").value;
+
+    const message =
+        document.getElementById("loginMessage");
+
+
+    try {
+
+        const response = await fetch(
+            "/api/login",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email,
+                    password
+                })
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            message.textContent = data.error;
+
+            return;
+        }
+
+
+        showDashboard(data.user);
+
+    } catch (error) {
+
+        message.textContent =
+            "Could not connect to the server.";
+
+    }
+}
+
+
+function showDashboard(user) {
+
+    document
+        .getElementById("authPage")
+        .classList.add("hidden");
+
+
+    document
+        .getElementById("dashboard")
+        .classList.remove("hidden");
+
+
+    document
+        .getElementById("welcomeUser")
+        .textContent =
+            `Welcome, ${user.name}`;
+
+
+    loadHistory();
+}
+
+
+async function logoutUser() {
+
+    await fetch(
+        "/api/logout",
+        {
+            method: "POST"
+        }
+    );
+
+
+    document
+        .getElementById("dashboard")
+        .classList.add("hidden");
+
+
+    document
+        .getElementById("authPage")
+        .classList.remove("hidden");
+
+
+    showLogin();
+
+}
+
+
+async function checkLogin() {
+
+    try {
+
+        const response =
+            await fetch("/api/me");
+
+        const data =
+            await response.json();
+
+
+        if (data.logged_in) {
+
+            showDashboard(data.user);
+
+        } else {
+
+            document
+                .getElementById("authPage")
+                .classList.remove("hidden");
+
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+
 async function scanDomain() {
 
     const domain =
         document.getElementById("domain").value.trim();
 
     const message =
-        document.getElementById("message");
-
-    const result =
-        document.getElementById("result");
+        document.getElementById("scanMessage");
 
 
     if (!domain) {
@@ -307,28 +660,23 @@ async function scanDomain() {
     }
 
 
-    message.textContent =
-        "Scanning...";
-
-    result.innerHTML =
-        "<p>CyberShield is analyzing the domain...</p>";
+    message.textContent = "Scanning...";
 
 
     try {
 
-        const response = await fetch("/api/scan", {
-
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                domain: domain
-            })
-
-        });
+        const response = await fetch(
+            "/api/scan",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    domain
+                })
+            }
+        );
 
 
         const data = await response.json();
@@ -337,20 +685,18 @@ async function scanDomain() {
         if (!response.ok) {
 
             message.textContent =
-                data.error || "Scan failed.";
+                data.error;
 
             return;
         }
-
-
-        const scan = data.result;
 
 
         message.textContent =
             "Scan completed successfully.";
 
 
-        // Dashboard statistics
+        const scan = data.result;
+
 
         document.getElementById("score").textContent =
             scan.risk.score;
@@ -359,61 +705,47 @@ async function scanDomain() {
             scan.risk.level;
 
         document.getElementById("https").textContent =
-            scan.http.https_available ? "Yes" : "No";
+            scan.http.https_available
+                ? "Yes"
+                : "No";
 
         document.getElementById("ssl").textContent =
-            scan.ssl.valid_connection ? "Valid" : "Not verified";
+            scan.ssl.valid_connection
+                ? "Valid"
+                : "Not verified";
 
-
-        // Current result
 
         const headers =
             scan.http.security_headers;
 
 
-        result.innerHTML = `
+        document.getElementById("result").innerHTML = `
 
             <div class="result-grid">
 
                 <div class="result-item">
-
                     <strong>Domain</strong>
-
                     ${scan.domain}
-
                 </div>
 
-
                 <div class="result-item">
-
                     <strong>HTTP Status</strong>
-
                     ${scan.http.status_code ?? "Not available"}
-
                 </div>
 
-
                 <div class="result-item">
-
                     <strong>Final URL</strong>
-
                     ${scan.http.final_url || "Not available"}
-
                 </div>
 
-
                 <div class="result-item">
-
                     <strong>IPv4 Addresses</strong>
-
                     ${
-                        scan.dns.ipv4_addresses.length > 0
+                        scan.dns.ipv4_addresses.length
                             ? scan.dns.ipv4_addresses.join(", ")
                             : "Not found"
                     }
-
                 </div>
-
 
                 <div class="result-item">
 
@@ -434,7 +766,6 @@ async function scanDomain() {
 
                     </p>
 
-
                     <p class="${
                         headers["Content-Security-Policy"]
                             ? "good"
@@ -449,7 +780,6 @@ async function scanDomain() {
                         }
 
                     </p>
-
 
                     <p class="${
                         headers["X-Content-Type-Options"]
@@ -466,7 +796,6 @@ async function scanDomain() {
 
                     </p>
 
-
                     <p class="${
                         headers["X-Frame-Options"]
                             ? "good"
@@ -482,7 +811,6 @@ async function scanDomain() {
 
                     </p>
 
-
                     <p class="${
                         headers["Referrer-Policy"]
                             ? "good"
@@ -497,7 +825,6 @@ async function scanDomain() {
                         }
 
                     </p>
-
 
                     <p class="${
                         headers["Permissions-Policy"]
@@ -516,13 +843,12 @@ async function scanDomain() {
 
                 </div>
 
-
                 <div class="result-item">
 
                     <strong>Risk Reasons</strong>
 
                     ${
-                        scan.risk.reasons.length > 0
+                        scan.risk.reasons.length
                             ? scan.risk.reasons
                                 .map(reason => `<p>• ${reason}</p>`)
                                 .join("")
@@ -531,49 +857,18 @@ async function scanDomain() {
 
                 </div>
 
-
-                <div class="result-item">
-
-                    <strong>SSL Certificate Issuer</strong>
-
-                    <p>
-                        ${scan.ssl.issuer || "Not available"}
-                    </p>
-
-                </div>
-
-
-                <div class="result-item">
-
-                    <strong>SSL Certificate Subject</strong>
-
-                    <p>
-                        ${scan.ssl.subject || "Not available"}
-                    </p>
-
-                </div>
-
             </div>
-
         `;
 
 
-        // Refresh history
-
         loadHistory();
 
-    }
-
-
-    catch (error) {
+    } catch (error) {
 
         message.textContent =
-            "Could not connect to CyberShield backend.";
-
-        console.error(error);
+            "Could not connect to the server.";
 
     }
-
 }
 
 
@@ -596,15 +891,13 @@ async function loadHistory() {
         if (!response.ok) {
 
             history.innerHTML =
-                `<p class="empty">
-                    ${data.error || "Could not load history."}
-                 </p>`;
+                `<p class="empty">${data.error}</p>`;
 
             return;
         }
 
 
-        if (data.scans.length === 0) {
+        if (!data.scans.length) {
 
             history.innerHTML =
                 `<p class="empty">
@@ -625,43 +918,35 @@ async function loadHistory() {
                     </strong>
 
                     <div>
-                        Risk Score:
-                        ${scan.risk_score}
+                        Risk Score: ${scan.risk_score}
                     </div>
 
                     <div>
-                        Risk Level:
-                        ${scan.risk_level}
+                        Risk Level: ${scan.risk_level}
                     </div>
 
                     <div>
-                        Scanned At:
-                        ${scan.scanned_at}
+                        Scanned At: ${scan.scanned_at}
                     </div>
 
                 </div>
 
             `).join("");
 
-    }
 
-
-    catch (error) {
+    } catch (error) {
 
         history.innerHTML =
             `<p class="empty">
-                Could not connect to backend.
+                Could not load scan history.
              </p>`;
-
-        console.error(error);
 
     }
 
 }
 
 
-// Load history automatically
-loadHistory();
+checkLogin();
 
 </script>
 
