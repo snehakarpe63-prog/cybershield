@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, send_from_directory
 
+from database.db import save_scan
 from services.security_scanner import scan_domain
 
 app = Flask(__name__)
@@ -25,9 +26,19 @@ def scan():
     try:
         result = scan_domain(domain)
 
+        risk_score = result["risk"]["score"]
+        risk_level = result["risk"]["level"]
+
+        save_scan(
+            result["domain"],
+            risk_score,
+            risk_level
+        )
+
         return jsonify({
             "success": True,
-            "result": result
+            "result": result,
+            "message": "Scan completed and saved successfully."
         })
 
     except ValueError as error:
@@ -36,7 +47,9 @@ def scan():
             "error": str(error)
         }), 400
 
-    except Exception:
+    except Exception as error:
+        print("Error:", error)
+
         return jsonify({
             "success": False,
             "error": "An unexpected error occurred."
