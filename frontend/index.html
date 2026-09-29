@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberShield</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #f4f7fb;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .scan-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        input {
+            width: 70%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        #result {
+            margin-top: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>CyberShield</h1>
+    <div class="subtitle">
+        Defensive website security analysis
+    </div>
+
+    <div class="scan-box">
+        <h2>Scan a Domain</h2>
+
+        <input
+            type="text"
+            id="domain"
+            placeholder="Enter authorized domain"
+        >
+
+        <button onclick="scanDomain()">
+            Scan
+        </button>
+
+        <div id="message"></div>
+    </div>
+
+    <div id="result"></div>
+
+</div>
+
+<script>
+async function scanDomain() {
+
+    const domain = document.getElementById("domain").value.trim();
+    const message = document.getElementById("message");
+    const result = document.getElementById("result");
+
+    if (!domain) {
+        message.textContent = "Please enter a domain.";
+        return;
+    }
+
+    message.textContent = "Scanning...";
+    result.innerHTML = "";
+
+    try {
+
+        const response = await fetch("/api/scan", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                domain: domain
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            message.textContent = data.error || "Scan failed.";
+            return;
+        }
+
+        message.textContent = "Scan completed successfully.";
+
+        result.innerHTML = `
+            <div class="card">
+                <h2>Scan Result</h2>
+                <pre>${JSON.stringify(data.result, null, 2)}</pre>
+            </div>
+        `;
+
+    } catch (error) {
+
+        message.textContent =
+            "Could not connect to CyberShield backend.";
+
+        console.error(error);
+    }
+}
+</script>
+
+</body>
+</html>
