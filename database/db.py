@@ -1,19 +1,29 @@
 import json
-import mysql.connector
-from mysql.connector import Error
-from dotenv import load_dotenv
 import os
+
+import mysql.connector
+from dotenv import load_dotenv
 
 load_dotenv()
 
 
 def get_db_connection():
-    return mysql.connector.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        user=os.getenv("DB_USER", "root"),
-        password=os.getenv("DB_PASSWORD", ""),
-        database=os.getenv("DB_NAME", "cybershield_db"),
-    )
+    use_ssl = os.getenv("DB_SSL", "false").lower() == "true"
+
+    connection_config = {
+        "host": os.getenv("DB_HOST", "localhost"),
+        "port": int(os.getenv("DB_PORT", "3306")),
+        "user": os.getenv("DB_USER", "root"),
+        "password": os.getenv("DB_PASSWORD", ""),
+        "database": os.getenv("DB_NAME", "cybershield_db"),
+    }
+
+    if use_ssl:
+        connection_config["ssl_disabled"] = False
+        connection_config["ssl_verify_cert"] = False
+        connection_config["ssl_verify_identity"] = False
+
+    return mysql.connector.connect(**connection_config)
 
 
 def create_user(name, email, password_hash):
@@ -53,6 +63,7 @@ def get_user_by_email(email):
         """
 
         cursor.execute(query, (email,))
+
         return cursor.fetchone()
 
     finally:
@@ -60,7 +71,13 @@ def get_user_by_email(email):
         connection.close()
 
 
-def save_scan(user_id, domain, risk_score, risk_level, scan_data):
+def save_scan(
+    user_id,
+    domain,
+    risk_score,
+    risk_level,
+    scan_data
+):
     connection = get_db_connection()
     cursor = connection.cursor()
 
@@ -115,6 +132,7 @@ def get_scan_history(user_id):
         """
 
         cursor.execute(query, (user_id,))
+
         return cursor.fetchall()
 
     finally:
@@ -141,13 +159,18 @@ def get_scan_by_id(user_id, scan_id):
             LIMIT 1
         """
 
-        cursor.execute(query, (scan_id, user_id))
+        cursor.execute(
+            query,
+            (scan_id, user_id)
+        )
 
         scan = cursor.fetchone()
 
         if scan and scan.get("scan_data"):
             if isinstance(scan["scan_data"], str):
-                scan["scan_data"] = json.loads(scan["scan_data"])
+                scan["scan_data"] = json.loads(
+                    scan["scan_data"]
+                )
 
         return scan
 
@@ -157,12 +180,6 @@ def get_scan_by_id(user_id, scan_id):
 
 
 def delete_scan(user_id, scan_id):
-    """
-    Delete only a scan belonging to the logged-in user.
-    Returns True when a scan was deleted.
-    Returns False when no matching scan exists.
-    """
-
     connection = get_db_connection()
     cursor = connection.cursor()
 
