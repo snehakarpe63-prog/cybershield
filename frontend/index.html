@@ -12,437 +12,322 @@
 
     <title>CyberShield</title>
 
-
     <style>
 
         * {
             box-sizing: border-box;
         }
 
-
         body {
-
             margin: 0;
-
-            font-family:
-                Arial,
-                sans-serif;
-
+            font-family: Arial, sans-serif;
             background: #f3f6fa;
-
             color: #1f2937;
         }
 
-
         .navbar {
-
             background: #111827;
-
             color: white;
-
             padding: 18px 40px;
-
             display: flex;
-
             justify-content: space-between;
-
             align-items: center;
         }
 
-
         .navbar h1 {
-
             margin: 0;
-
             font-size: 24px;
         }
 
-
         .user-area {
-
             display: flex;
-
             align-items: center;
-
             gap: 15px;
         }
 
-
         .container {
-
             max-width: 1150px;
-
             margin: 30px auto;
-
             padding: 0 20px;
         }
 
-
         .auth-container {
-
             max-width: 450px;
-
             margin: 60px auto;
-
             padding: 20px;
         }
 
-
         .card {
-
             background: white;
-
             border-radius: 12px;
-
             padding: 24px;
-
             margin-bottom: 24px;
-
-            box-shadow:
-                0 3px 12px
-                rgba(0, 0, 0, 0.06);
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
         }
 
-
         .tabs {
-
             display: flex;
-
             margin-bottom: 20px;
         }
 
-
         .tabs button {
-
             flex: 1;
-
             border-radius: 0;
         }
 
-
         .tabs button:first-child {
-
-            border-radius:
-                8px 0 0 8px;
+            border-radius: 8px 0 0 8px;
         }
-
 
         .tabs button:last-child {
-
-            border-radius:
-                0 8px 8px 0;
+            border-radius: 0 8px 8px 0;
         }
 
-
         input {
-
             width: 100%;
-
             padding: 13px;
-
             margin-bottom: 12px;
-
-            border:
-                1px solid #cbd5e1;
-
+            border: 1px solid #cbd5e1;
             border-radius: 8px;
-
             font-size: 16px;
         }
 
-
         button {
-
-            padding: 12px 20px;
-
+            padding: 11px 18px;
             border: none;
-
             border-radius: 8px;
-
             background: #111827;
-
             color: white;
-
             cursor: pointer;
-
-            font-size: 15px;
-        }
-
-
-        button:hover {
-
-            opacity: 0.9;
-        }
-
-
-        .logout-button {
-
-            background: #7f1d1d;
-        }
-
-
-        .message {
-
-            margin-top: 15px;
-
-            font-weight: bold;
-        }
-
-
-        .scan-row {
-
-            display: flex;
-
-            gap: 10px;
-        }
-
-
-        .scan-row input {
-
-            margin-bottom: 0;
-        }
-
-
-        .stats {
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(4, 1fr);
-
-            gap: 15px;
-        }
-
-
-        .stat-card {
-
-            background: white;
-
-            border-radius: 12px;
-
-            padding: 20px;
-
-            box-shadow:
-                0 3px 12px
-                rgba(0, 0, 0, 0.06);
-        }
-
-
-        .stat-card h3 {
-
-            margin: 0 0 10px;
-
-            color: #64748b;
-
             font-size: 14px;
         }
 
+        button:hover {
+            opacity: 0.9;
+        }
 
-        .value {
+        .secondary-button {
+            background: #475569;
+        }
 
-            font-size: 25px;
+        .logout-button {
+            background: #7f1d1d;
+        }
 
+        .message {
+            margin-top: 15px;
             font-weight: bold;
         }
 
+        .scan-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .scan-row input {
+            margin-bottom: 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .value {
+            font-size: 25px;
+            font-weight: bold;
+        }
 
         .result-grid {
-
             display: grid;
-
-            grid-template-columns:
-                repeat(2, 1fr);
-
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
         }
 
-
         .result-item {
-
             padding: 18px;
-
-            border:
-                1px solid #e2e8f0;
-
+            border: 1px solid #e2e8f0;
             border-radius: 10px;
-
             background: #f8fafc;
         }
-
 
         .result-item strong {
-
             display: block;
-
             margin-bottom: 8px;
         }
-
 
         .history-item {
-
-            border:
-                1px solid #e2e8f0;
-
+            border: 1px solid #e2e8f0;
             border-radius: 10px;
-
             padding: 16px;
-
             margin-top: 12px;
-
             background: #f8fafc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
         }
 
+        .history-info {
+            flex: 1;
+        }
 
-        .history-item strong {
-
+        .history-info strong {
             display: block;
-
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
+        .history-actions {
+            display: flex;
+            gap: 8px;
+        }
 
         .recommendation {
-
-            border:
-                1px solid #bfdbfe;
-
+            border: 1px solid #bfdbfe;
             background: #eff6ff;
-
             border-radius: 10px;
-
             padding: 18px;
-
             margin-top: 12px;
         }
 
-
         .recommendation h3 {
-
             margin-top: 0;
-
             color: #1d4ed8;
         }
-
 
         .finding {
-
-            border:
-                1px solid #fed7aa;
-
+            border: 1px solid #fed7aa;
             background: #fff7ed;
-
             border-radius: 10px;
-
             padding: 15px;
-
             margin-top: 10px;
         }
-
 
         .limitation {
-
-            border:
-                1px solid #bfdbfe;
-
+            border: 1px solid #bfdbfe;
             background: #eff6ff;
-
             border-radius: 10px;
-
             padding: 15px;
-
             margin-top: 10px;
         }
 
-
         .good {
-
             color: #166534;
-
             font-weight: bold;
         }
-
 
         .warning {
-
             color: #92400e;
-
             font-weight: bold;
         }
-
 
         .info {
-
             color: #1d4ed8;
-
             font-weight: bold;
         }
 
-
         .empty {
-
             color: #64748b;
         }
 
-
         .hidden {
-
             display: none;
         }
 
-
-        .section-title {
-
+        .section-header {
             display: flex;
-
-            justify-content:
-                space-between;
-
+            justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
 
+        .report-header {
+            background: #111827;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .report-header h2 {
+            margin: 0 0 8px;
+        }
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .report-item {
+            padding: 18px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .report-item strong {
+            display: block;
+            margin-bottom: 8px;
+        }
 
         @media (max-width: 850px) {
 
             .stats {
-
-                grid-template-columns:
-                    repeat(2, 1fr);
+                grid-template-columns: repeat(2, 1fr);
             }
 
-
-            .result-grid {
-
+            .result-grid,
+            .report-grid {
                 grid-template-columns: 1fr;
             }
         }
 
-
-        @media (max-width: 600px) {
+        @media (max-width: 650px) {
 
             .navbar {
-
-                padding:
-                    15px 20px;
+                padding: 15px 20px;
             }
 
-
             .user-area {
-
                 flex-direction: column;
-
                 align-items: flex-end;
             }
 
-
             .scan-row {
-
                 flex-direction: column;
             }
 
-
             .stats {
-
                 grid-template-columns: 1fr;
+            }
+
+            .history-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .history-actions {
+                width: 100%;
+            }
+
+            .history-actions button {
+                flex: 1;
             }
         }
 
@@ -450,13 +335,12 @@
 
 </head>
 
-
 <body>
 
 
 <!-- =========================
-     AUTHENTICATION
-========================= -->
+     AUTHENTICATION PAGE
+========================== -->
 
 <div
     id="authPage"
@@ -485,6 +369,8 @@
         </div>
 
 
+        <!-- LOGIN -->
+
         <div id="loginForm">
 
             <h2>Login</h2>
@@ -512,6 +398,8 @@
 
         </div>
 
+
+        <!-- REGISTER -->
 
         <div
             id="registerForm"
@@ -556,18 +444,16 @@
 
 <!-- =========================
      DASHBOARD
-========================= -->
+========================== -->
 
 <div
     id="dashboard"
     class="hidden"
 >
 
-
     <div class="navbar">
 
         <h1>CyberShield</h1>
-
 
         <div class="user-area">
 
@@ -588,7 +474,7 @@
     <div class="container">
 
 
-        <!-- Scan -->
+        <!-- NEW SCAN -->
 
         <div class="card">
 
@@ -623,7 +509,7 @@
         </div>
 
 
-        <!-- Stats -->
+        <!-- STATS -->
 
         <div class="stats">
 
@@ -685,7 +571,7 @@
         </div>
 
 
-        <!-- Result -->
+        <!-- CURRENT SCAN -->
 
         <div class="card">
 
@@ -702,11 +588,13 @@
         </div>
 
 
-        <!-- Recommendations -->
+        <!-- RECOMMENDATIONS -->
 
         <div class="card">
 
-            <h2>Security Recommendations</h2>
+            <h2>
+                Security Recommendations
+            </h2>
 
             <div id="recommendations">
 
@@ -720,15 +608,18 @@
         </div>
 
 
-        <!-- History -->
+        <!-- HISTORY -->
 
         <div class="card">
 
-            <div class="section-title">
+            <div class="section-header">
 
-                <h2>My Scan History</h2>
+                <h2>
+                    My Scan History
+                </h2>
 
                 <button
+                    class="secondary-button"
                     onclick="loadHistory()"
                 >
                     Refresh
@@ -737,7 +628,41 @@
             </div>
 
 
-            <div id="history"></div>
+            <div id="history">
+
+                <p class="empty">
+                    Loading history...
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- FULL REPORT -->
+
+        <div
+            id="reportSection"
+            class="card hidden"
+        >
+
+            <div class="section-header">
+
+                <h2>
+                    Saved Scan Report
+                </h2>
+
+                <button
+                    class="secondary-button"
+                    onclick="closeReport()"
+                >
+                    Close Report
+                </button>
+
+            </div>
+
+
+            <div id="reportContent"></div>
 
         </div>
 
@@ -1010,12 +935,6 @@ async function checkLogin() {
             showDashboard(data.user);
 
         }
-        else {
-
-            document
-                .getElementById("authPage")
-                .classList.remove("hidden");
-        }
 
     }
     catch (error) {
@@ -1027,7 +946,7 @@ async function checkLogin() {
 
 
 /* =========================
-   ESCAPE HTML
+   HTML ESCAPE
 ========================= */
 
 
@@ -1059,10 +978,6 @@ async function scanDomain() {
         document
             .getElementById("scanMessage");
 
-    const result =
-        document
-            .getElementById("result");
-
 
     if (!domain) {
 
@@ -1075,13 +990,6 @@ async function scanDomain() {
 
     message.textContent =
         "Scanning...";
-
-
-    result.innerHTML = `
-        <p class="empty">
-            CyberShield is analyzing the domain...
-        </p>
-    `;
 
 
     try {
@@ -1121,7 +1029,6 @@ async function scanDomain() {
         const scan =
             data.result;
 
-
         const recommendations =
             data.recommendations || [];
 
@@ -1129,8 +1036,6 @@ async function scanDomain() {
         message.textContent =
             "Scan completed successfully.";
 
-
-        /* Stats */
 
         document
             .getElementById("score")
@@ -1160,8 +1065,6 @@ async function scanDomain() {
                     : "Unable to verify";
 
 
-        /* Basic data */
-
         const headers =
             scan.http.security_headers || {};
 
@@ -1169,81 +1072,44 @@ async function scanDomain() {
             scan.dns.ipv4_addresses || [];
 
 
-        let html = `
+        let resultHtml = `
 
             <div class="result-grid">
 
-
                 <div class="result-item">
-
-                    <strong>
-                        Domain
-                    </strong>
-
+                    <strong>Domain</strong>
                     ${escapeHtml(scan.domain)}
-
                 </div>
 
-
                 <div class="result-item">
-
-                    <strong>
-                        Risk Score
-                    </strong>
-
+                    <strong>Risk Score</strong>
                     ${scan.risk.score}
-
                 </div>
 
-
                 <div class="result-item">
-
-                    <strong>
-                        Risk Level
-                    </strong>
-
-                    ${escapeHtml(
-                        scan.risk.level
-                    )}
-
+                    <strong>Risk Level</strong>
+                    ${escapeHtml(scan.risk.level)}
                 </div>
 
-
                 <div class="result-item">
-
-                    <strong>
-                        HTTPS Status
-                    </strong>
-
+                    <strong>HTTPS Status</strong>
                     ${
                         scan.http.https.reachable
                             ? '<span class="good">Reachable</span>'
                             : '<span class="info">Unable to verify</span>'
                     }
-
                 </div>
 
-
                 <div class="result-item">
-
-                    <strong>
-                        HTTP Status
-                    </strong>
-
+                    <strong>HTTP Status</strong>
                     ${
                         scan.http.https.status_code ??
                         "Not available"
                     }
-
                 </div>
 
-
                 <div class="result-item">
-
-                    <strong>
-                        Final URL
-                    </strong>
-
+                    <strong>Final URL</strong>
                     ${
                         scan.http.https.final_url
                             ? escapeHtml(
@@ -1251,16 +1117,10 @@ async function scanDomain() {
                             )
                             : "Not available"
                     }
-
                 </div>
 
-
                 <div class="result-item">
-
-                    <strong>
-                        IPv4 Addresses
-                    </strong>
-
+                    <strong>IPv4 Addresses</strong>
                     ${
                         ipv4.length
                             ? escapeHtml(
@@ -1268,31 +1128,23 @@ async function scanDomain() {
                             )
                             : "Not found"
                     }
-
                 </div>
 
-
                 <div class="result-item">
-
-                    <strong>
-                        TLS Status
-                    </strong>
-
+                    <strong>TLS Status</strong>
                     ${
                         scan.ssl.valid_connection
                             ? '<span class="good">Verified</span>'
                             : '<span class="info">Unable to verify</span>'
                     }
-
                 </div>
 
             </div>
+
         `;
 
 
-        /* TLS */
-
-        html += `
+        resultHtml += `
 
             <div
                 class="result-item"
@@ -1303,7 +1155,6 @@ async function scanDomain() {
                     TLS Certificate
                 </strong>
 
-
                 <p>
                     Status:
                     ${
@@ -1311,7 +1162,6 @@ async function scanDomain() {
                         "Not available"
                     }
                 </p>
-
 
                 <p>
                     Issuer:
@@ -1324,7 +1174,6 @@ async function scanDomain() {
                     }
                 </p>
 
-
                 <p>
                     Subject:
                     ${
@@ -1335,7 +1184,6 @@ async function scanDomain() {
                             : "Not available"
                     }
                 </p>
-
 
                 <p>
                     Expires:
@@ -1348,7 +1196,6 @@ async function scanDomain() {
                     }
                 </p>
 
-
                 <p>
                     Days Until Expiry:
                     ${
@@ -1359,12 +1206,11 @@ async function scanDomain() {
                 </p>
 
             </div>
+
         `;
 
 
-        /* Headers */
-
-        html += `
+        resultHtml += `
 
             <div
                 class="result-item"
@@ -1374,18 +1220,17 @@ async function scanDomain() {
                 <strong>
                     Security Headers
                 </strong>
+
         `;
 
 
         const headerNames = [
-
             "Strict-Transport-Security",
             "Content-Security-Policy",
             "X-Content-Type-Options",
             "X-Frame-Options",
             "Referrer-Policy",
             "Permissions-Policy"
-
         ];
 
 
@@ -1396,17 +1241,16 @@ async function scanDomain() {
                     Object.keys(headers).length === 0
                 ) {
 
-                    html += `
+                    resultHtml += `
                         <p class="info">
                             ${escapeHtml(name)}:
                             Not evaluated
                         </p>
                     `;
 
-                }
-                else {
+                } else {
 
-                    html += `
+                    resultHtml += `
                         <p class="${
                             headers[name]
                                 ? "good"
@@ -1428,14 +1272,12 @@ async function scanDomain() {
         );
 
 
-        html += `
+        resultHtml += `
             </div>
         `;
 
 
-        /* Findings */
-
-        html += `
+        resultHtml += `
 
             <div
                 class="result-item"
@@ -1445,6 +1287,7 @@ async function scanDomain() {
                 <strong>
                     Security Findings
                 </strong>
+
         `;
 
 
@@ -1456,34 +1299,33 @@ async function scanDomain() {
             scan.risk.findings.forEach(
                 finding => {
 
-                    html += `
+                    resultHtml += `
                         <div class="finding">
                             ${escapeHtml(finding)}
                         </div>
                     `;
+
                 }
             );
 
-        }
-        else {
+        } else {
 
-            html += `
+            resultHtml += `
                 <p class="good">
                     No confirmed findings from
                     the current checks.
                 </p>
             `;
+
         }
 
 
-        html += `
+        resultHtml += `
             </div>
         `;
 
 
-        /* Limitations */
-
-        html += `
+        resultHtml += `
 
             <div
                 class="result-item"
@@ -1493,6 +1335,7 @@ async function scanDomain() {
                 <strong>
                     Analysis Limitations
                 </strong>
+
         `;
 
 
@@ -1504,81 +1347,95 @@ async function scanDomain() {
             scan.risk.limitations.forEach(
                 limitation => {
 
-                    html += `
+                    resultHtml += `
                         <div class="limitation">
                             ${escapeHtml(limitation)}
                         </div>
                     `;
+
                 }
             );
 
-        }
-        else {
+        } else {
 
-            html += `
+            resultHtml += `
                 <p class="good">
                     No analysis limitations were reported.
                 </p>
             `;
+
         }
 
 
-        html += `
+        resultHtml += `
             </div>
         `;
 
 
-        result.innerHTML = html;
+        document
+            .getElementById("result")
+            .innerHTML =
+                resultHtml;
 
 
         /* Recommendations */
 
         const recommendationBox =
-            document
-                .getElementById(
-                    "recommendations"
-                );
+            document.getElementById(
+                "recommendations"
+            );
 
 
-        recommendationBox.innerHTML = "";
+        if (!recommendations.length) {
 
+            recommendationBox.innerHTML = `
+                <p class="empty">
+                    No recommendations were generated.
+                </p>
+            `;
 
-        recommendations.forEach(
-            item => {
+        } else {
 
-                recommendationBox.innerHTML += `
+            recommendationBox.innerHTML =
+                recommendations
+                    .map(
+                        item => `
 
-                    <div class="recommendation">
+                            <div class="recommendation">
 
-                        <h3>
-                            ${escapeHtml(
-                                item.title
-                            )}
-                        </h3>
+                                <h3>
+                                    ${escapeHtml(
+                                        item.title
+                                    )}
+                                </h3>
 
-                        <p>
-                            <strong>
-                                Why it matters:
-                            </strong>
-                            ${escapeHtml(
-                                item.why
-                            )}
-                        </p>
+                                <p>
+                                    <strong>
+                                        Why it matters:
+                                    </strong>
 
-                        <p>
-                            <strong>
-                                Recommended action:
-                            </strong>
-                            ${escapeHtml(
-                                item.action
-                            )}
-                        </p>
+                                    ${escapeHtml(
+                                        item.why
+                                    )}
+                                </p>
 
-                    </div>
+                                <p>
+                                    <strong>
+                                        Recommended action:
+                                    </strong>
 
-                `;
-            }
-        );
+                                    ${escapeHtml(
+                                        item.action
+                                    )}
+                                </p>
+
+                            </div>
+
+                        `
+                    )
+                    .join("");
+
+        }
 
 
         await loadHistory();
@@ -1592,7 +1449,7 @@ async function scanDomain() {
         );
 
         message.textContent =
-            "The scan result could not be displayed.";
+            "Could not display the scan result.";
 
     }
 }
@@ -1613,7 +1470,7 @@ async function loadHistory() {
 
     history.innerHTML = `
         <p class="empty">
-            Loading scan history...
+            Loading history...
         </p>
     `;
 
@@ -1665,33 +1522,46 @@ async function loadHistory() {
                 .map(
                     scan => `
 
-                        <div
-                            class="history-item"
-                        >
+                        <div class="history-item">
 
-                            <strong>
-                                ${escapeHtml(
-                                    scan.domain
-                                )}
-                            </strong>
+                            <div class="history-info">
 
-                            <div>
-                                Risk Score:
-                                ${scan.risk_score}
+                                <strong>
+                                    ${escapeHtml(
+                                        scan.domain
+                                    )}
+                                </strong>
+
+                                <div>
+                                    Risk Score:
+                                    ${scan.risk_score}
+                                </div>
+
+                                <div>
+                                    Risk Level:
+                                    ${escapeHtml(
+                                        scan.risk_level
+                                    )}
+                                </div>
+
+                                <div>
+                                    Scanned At:
+                                    ${escapeHtml(
+                                        scan.scanned_at
+                                    )}
+                                </div>
+
                             </div>
 
-                            <div>
-                                Risk Level:
-                                ${escapeHtml(
-                                    scan.risk_level
-                                )}
-                            </div>
 
-                            <div>
-                                Scanned At:
-                                ${escapeHtml(
-                                    scan.scanned_at
-                                )}
+                            <div class="history-actions">
+
+                                <button
+                                    onclick="viewReport(${scan.id})"
+                                >
+                                    View Report
+                                </button>
+
                             </div>
 
                         </div>
@@ -1708,13 +1578,558 @@ async function loadHistory() {
                 Could not load scan history.
             </p>
         `;
+
     }
+}
+
+
+/* =========================
+   VIEW REPORT
+========================= */
+
+
+async function viewReport(scanId) {
+
+    const reportSection =
+        document.getElementById(
+            "reportSection"
+        );
+
+    const reportContent =
+        document.getElementById(
+            "reportContent"
+        );
+
+
+    reportSection.classList.remove(
+        "hidden"
+    );
+
+
+    reportContent.innerHTML = `
+        <p class="empty">
+            Loading saved report...
+        </p>
+    `;
+
+
+    reportSection.scrollIntoView({
+        behavior: "smooth"
+    });
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/scans/${scanId}`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            reportContent.innerHTML = `
+                <p class="warning">
+                    ${
+                        escapeHtml(
+                            data.error ||
+                            "Could not load report."
+                        )
+                    }
+                </p>
+            `;
+
+            return;
+        }
+
+
+        const savedScan =
+            data.scan;
+
+
+        const report =
+            savedScan.scan_data;
+
+
+        const scan =
+            report.result;
+
+
+        const recommendations =
+            report.recommendations || [];
+
+
+        const headers =
+            scan.http.security_headers || {};
+
+
+        const ipv4 =
+            scan.dns.ipv4_addresses || [];
+
+
+        let html = `
+
+            <div class="report-header">
+
+                <h2>
+                    ${escapeHtml(
+                        scan.domain
+                    )}
+                </h2>
+
+                <p>
+                    Scan ID:
+                    ${savedScan.id}
+                </p>
+
+                <p>
+                    Scanned At:
+                    ${escapeHtml(
+                        savedScan.scanned_at
+                    )}
+                </p>
+
+            </div>
+
+
+            <div class="report-grid">
+
+                <div class="report-item">
+
+                    <strong>
+                        Risk Score
+                    </strong>
+
+                    ${scan.risk.score}
+
+                </div>
+
+
+                <div class="report-item">
+
+                    <strong>
+                        Risk Level
+                    </strong>
+
+                    ${escapeHtml(
+                        scan.risk.level
+                    )}
+
+                </div>
+
+
+                <div class="report-item">
+
+                    <strong>
+                        HTTPS
+                    </strong>
+
+                    ${
+                        scan.http.https.reachable
+                            ? "Verified"
+                            : "Unable to verify"
+                    }
+
+                </div>
+
+
+                <div class="report-item">
+
+                    <strong>
+                        TLS
+                    </strong>
+
+                    ${
+                        scan.ssl.valid_connection
+                            ? "Verified"
+                            : "Unable to verify"
+                    }
+
+                </div>
+
+
+                <div class="report-item">
+
+                    <strong>
+                        HTTP Status
+                    </strong>
+
+                    ${
+                        scan.http.https.status_code ??
+                        "Not available"
+                    }
+
+                </div>
+
+
+                <div class="report-item">
+
+                    <strong>
+                        IPv4
+                    </strong>
+
+                    ${
+                        ipv4.length
+                            ? escapeHtml(
+                                ipv4.join(", ")
+                            )
+                            : "Not found"
+                    }
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        /* TLS */
+
+        html += `
+
+            <div
+                class="report-item"
+                style="margin-top:15px;"
+            >
+
+                <strong>
+                    TLS Certificate
+                </strong>
+
+                <p>
+                    Status:
+                    ${
+                        scan.ssl.status ||
+                        "Not available"
+                    }
+                </p>
+
+                <p>
+                    Issuer:
+                    ${
+                        scan.ssl.issuer
+                            ? escapeHtml(
+                                scan.ssl.issuer
+                            )
+                            : "Not available"
+                    }
+                </p>
+
+                <p>
+                    Subject:
+                    ${
+                        scan.ssl.subject
+                            ? escapeHtml(
+                                scan.ssl.subject
+                            )
+                            : "Not available"
+                    }
+                </p>
+
+                <p>
+                    Expires:
+                    ${
+                        scan.ssl.expires_at
+                            ? escapeHtml(
+                                scan.ssl.expires_at
+                            )
+                            : "Not available"
+                    }
+                </p>
+
+                <p>
+                    Days Until Expiry:
+                    ${
+                        scan.ssl.days_until_expiry !== null
+                            ? scan.ssl.days_until_expiry
+                            : "Not available"
+                    }
+                </p>
+
+            </div>
+
+        `;
+
+
+        /* Headers */
+
+        html += `
+
+            <div
+                class="report-item"
+                style="margin-top:15px;"
+            >
+
+                <strong>
+                    Security Headers
+                </strong>
+
+        `;
+
+
+        const headerNames = [
+            "Strict-Transport-Security",
+            "Content-Security-Policy",
+            "X-Content-Type-Options",
+            "X-Frame-Options",
+            "Referrer-Policy",
+            "Permissions-Policy"
+        ];
+
+
+        headerNames.forEach(
+            name => {
+
+                if (
+                    Object.keys(headers).length === 0
+                ) {
+
+                    html += `
+                        <p class="info">
+                            ${escapeHtml(name)}:
+                            Not evaluated
+                        </p>
+                    `;
+
+                } else {
+
+                    html += `
+                        <p class="${
+                            headers[name]
+                                ? "good"
+                                : "warning"
+                        }">
+
+                            ${escapeHtml(name)}:
+                            ${
+                                headers[name]
+                                    ? "Present"
+                                    : "Missing"
+                            }
+
+                        </p>
+                    `;
+                }
+
+            }
+        );
+
+
+        html += `
+            </div>
+        `;
+
+
+        /* Findings */
+
+        html += `
+
+            <div
+                class="report-item"
+                style="margin-top:15px;"
+            >
+
+                <strong>
+                    Security Findings
+                </strong>
+
+        `;
+
+
+        if (
+            scan.risk.findings &&
+            scan.risk.findings.length
+        ) {
+
+            scan.risk.findings.forEach(
+                finding => {
+
+                    html += `
+                        <div class="finding">
+                            ${escapeHtml(finding)}
+                        </div>
+                    `;
+
+                }
+            );
+
+        } else {
+
+            html += `
+                <p class="good">
+                    No confirmed findings.
+                </p>
+            `;
+
+        }
+
+
+        html += `
+            </div>
+        `;
+
+
+        /* Limitations */
+
+        html += `
+
+            <div
+                class="report-item"
+                style="margin-top:15px;"
+            >
+
+                <strong>
+                    Analysis Limitations
+                </strong>
+
+        `;
+
+
+        if (
+            scan.risk.limitations &&
+            scan.risk.limitations.length
+        ) {
+
+            scan.risk.limitations.forEach(
+                limitation => {
+
+                    html += `
+                        <div class="limitation">
+                            ${escapeHtml(
+                                limitation
+                            )}
+                        </div>
+                    `;
+
+                }
+            );
+
+        } else {
+
+            html += `
+                <p class="good">
+                    No analysis limitations.
+                </p>
+            `;
+
+        }
+
+
+        html += `
+            </div>
+        `;
+
+
+        /* Recommendations */
+
+        html += `
+
+            <div
+                class="report-item"
+                style="margin-top:15px;"
+            >
+
+                <strong>
+                    Security Recommendations
+                </strong>
+
+        `;
+
+
+        recommendations.forEach(
+            recommendation => {
+
+                html += `
+
+                    <div
+                        class="recommendation"
+                    >
+
+                        <h3>
+                            ${escapeHtml(
+                                recommendation.title
+                            )}
+                        </h3>
+
+                        <p>
+
+                            <strong>
+                                Why it matters:
+                            </strong>
+
+                            ${escapeHtml(
+                                recommendation.why
+                            )}
+
+                        </p>
+
+                        <p>
+
+                            <strong>
+                                Recommended action:
+                            </strong>
+
+                            ${escapeHtml(
+                                recommendation.action
+                            )}
+
+                        </p>
+
+                    </div>
+
+                `;
+
+            }
+        );
+
+
+        html += `
+            </div>
+        `;
+
+
+        reportContent.innerHTML = html;
+
+    }
+    catch (error) {
+
+        console.error(
+            "Report error:",
+            error
+        );
+
+        reportContent.innerHTML = `
+            <p class="warning">
+                Could not load the saved report.
+            </p>
+        `;
+
+    }
+}
+
+
+/* =========================
+   CLOSE REPORT
+========================= */
+
+
+function closeReport() {
+
+    document
+        .getElementById("reportSection")
+        .classList.add("hidden");
+
 }
 
 
 /* =========================
    START
 ========================= */
+
 
 checkLogin();
 
