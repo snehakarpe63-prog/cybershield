@@ -1,20 +1,20 @@
-import os
-
-from dotenv import load_dotenv
 from flask import (
     Flask,
     jsonify,
     request,
-    send_from_directory,
     session,
+    send_from_directory,
 )
+from dotenv import load_dotenv
+import os
 
 from database.db import (
     create_user,
-    get_scan_by_id,
-    get_scan_history,
     get_user_by_email,
     save_scan,
+    get_scan_history,
+    get_scan_by_id,
+    delete_scan,
 )
 
 from services.auth import (
@@ -22,22 +22,33 @@ from services.auth import (
     verify_password,
 )
 
-from services.recommendations import (
-    build_recommendations,
-)
-
 from services.security_scanner import (
     scan_domain,
+)
+
+from services.recommendations import (
+    build_recommendations,
 )
 
 
 load_dotenv()
 
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_folder="frontend",
+    static_url_path=""
+)
 
-app.secret_key = os.getenv("SECRET_KEY")
+app.secret_key = os.getenv(
+    "SECRET_KEY",
+    "cybershield-development-secret"
+)
 
+
+# ---------------------------------------------------------
+# HOME
+# ---------------------------------------------------------
 
 @app.route("/")
 def home():
@@ -47,122 +58,94 @@ def home():
     )
 
 
+# ---------------------------------------------------------
+# REGISTER
+# ---------------------------------------------------------
+
 @app.route("/api/register", methods=["POST"])
 def register():
 
     data = request.get_json(silent=True) or {}
 
-    name = data.get("name", "").strip()
-    email = data.get("email", "").strip().lower()
-    password = data.get("password", "")
+    name = str(data.get("name", "")).strip()
+    email = str(data.get("email", "")).strip().lower()
+    password = str(data.get("password", ""))
 
     if not name or not email or not password:
         return jsonify({
-            "success": False,
             "error": "Name, email and password are required."
         }), 400
 
-    if len(password) < 8:
+    existing_user = get_user_by_email(email)
+
+    if existing_user:
         return jsonify({
-            "success": False,
-            "error": "Password must contain at least 8 characters."
-        }), 400
+            "error": "An account with this email already exists."
+        }), 409
 
-    if "@" not in email:
-        return jsonify({
-            "success": False,
-            "error": "Please enter a valid email address."
-        }), 400
+    password_hash = hash_password(password)
 
-    try:
+    user_id = create_user(
+        name,
+        email,
+        password_hash
+    )
 
-        existing_user = get_user_by_email(email)
+    return jsonify({
+        "message": "Registration successful.",
+        "user_id": user_id
+    }), 201
 
-        if existing_user:
-            return jsonify({
-                "success": False,
-                "error": "An account with this email already exists."
-            }), 409
 
-        password_hash = hash_password(password)
-
-        create_user(
-            name,
-            email,
-            password_hash
-        )
-
-        return jsonify({
-            "success": True,
-            "message": "Registration successful. Please login."
-        }), 201
-
-    except Exception as error:
-
-        print("Registration error:", error)
-
-        return jsonify({
-            "success": False,
-            "error": "Registration failed."
-        }), 500
-
+# ---------------------------------------------------------
+# LOGIN
+# ---------------------------------------------------------
 
 @app.route("/api/login", methods=["POST"])
 def login():
 
     data = request.get_json(silent=True) or {}
 
-    email = data.get("email", "").strip().lower()
-    password = data.get("password", "")
+    email = str(data.get("email", "")).strip().lower()
+    password = str(data.get("password", ""))
 
     if not email or not password:
         return jsonify({
-            "success": False,
             "error": "Email and password are required."
         }), 400
 
-    try:
+    user = get_user_by_email(email)
 
-        user = get_user_by_email(email)
-
-        if not user:
-            return jsonify({
-                "success": False,
-                "error": "Invalid email or password."
-            }), 401
-
-        if not verify_password(
-            password,
-            user["password_hash"]
-        ):
-            return jsonify({
-                "success": False,
-                "error": "Invalid email or password."
-            }), 401
-
-        session["user_id"] = user["id"]
-        session["user_name"] = user["name"]
-        session["user_email"] = user["email"]
-
+    if not user:
         return jsonify({
-            "success": True,
-            "message": "Login successful.",
-            "user": {
-                "id": user["id"],
-                "name": user["name"],
-                "email": user["email"]
-            }
-        })
+            "error": "Invalid email or password."
+        }), 401
 
-    except Exception as error:
-
-        print("Login error:", error)
-
+    if not verify_password(
+        password,
+        user["password_hash"]
+    ):
         return jsonify({
-            "success": False,
-            "error": "Login failed."
-        }), 500
+            "error": "Invalid email or password."
+        }), 401
 
+    session["user_id"] = user["id"]
+    session["user_name"] = user["name"]
+    session["user_email"] = user["email"]
+
+    return jsonify({
+        "message": "Login successful.",
+        "user": {
+            "id": user["id"],
+            "name": user["name"],
+            "email": user["email"]
+        }
+    }), 200
+
+
+# ---------------------------------------------------------
+# LOGOUT
+# ---------------------------------------------------------
 
 @app.route("/api/logout", methods=["POST"])
 def logout():
@@ -170,60 +153,80 @@ def logout():
     session.clear()
 
     return jsonify({
-        "success": True,
         "message": "Logged out successfully."
-    })
+    }), 200
 
+
+# ---------------------------------------------------------
+# CURRENT USER
+# ---------------------------------------------------------
 
 @app.route("/api/me", methods=["GET"])
 def current_user():
 
-    if "user_id" not in session:
+    user_id = session.get("user_id")
 
+    if not user_id:
         return jsonify({
             "logged_in": False
-        })
+        }), 200
 
     return jsonify({
         "logged_in": True,
         "user": {
-            "id": session["user_id"],
-            "name": session["user_name"],
-            "email": session["user_email"]
+            "id": user_id,
+            "name": session.get("user_name"),
+            "email": session.get("user_email")
         }
-    })
+    }), 200
 
+
+# ---------------------------------------------------------
+# SECURITY SCAN
+# ---------------------------------------------------------
 
 @app.route("/api/scan", methods=["POST"])
 def scan():
 
-    if "user_id" not in session:
+    user_id = session.get("user_id")
 
+    if not user_id:
         return jsonify({
-            "success": False,
-            "error": "Please log in before starting a scan."
+            "error": "Please login before starting a scan."
         }), 401
 
     data = request.get_json(silent=True) or {}
 
-    domain = data.get("domain")
+    domain = str(
+        data.get("domain", "")
+    ).strip()
 
     if not domain:
-
         return jsonify({
-            "success": False,
-            "error": "Please provide a domain."
+            "error": "Domain is required."
         }), 400
 
     try:
 
         result = scan_domain(domain)
 
-        risk_score = result["risk"]["score"]
-        risk_level = result["risk"]["level"]
-
         recommendations = build_recommendations(
             result
+        )
+
+        risk = result.get(
+            "risk",
+            {}
+        )
+
+        risk_score = risk.get(
+            "score",
+            0
+        )
+
+        risk_level = risk.get(
+            "level",
+            "Unverified"
         )
 
         complete_report = {
@@ -232,107 +235,139 @@ def scan():
         }
 
         scan_id = save_scan(
-            session["user_id"],
-            result["domain"],
-            risk_score,
-            risk_level,
-            complete_report
+            user_id=user_id,
+            domain=result.get(
+                "domain",
+                domain
+            ),
+            risk_score=risk_score,
+            risk_level=risk_level,
+            scan_data=complete_report
         )
 
         return jsonify({
-            "success": True,
+            "message": "Scan completed successfully.",
             "scan_id": scan_id,
             "result": result,
-            "recommendations": recommendations,
-            "message": "Scan completed and saved successfully."
-        })
-
-    except ValueError as error:
-
-        return jsonify({
-            "success": False,
-            "error": str(error)
-        }), 400
+            "recommendations": recommendations
+        }), 200
 
     except Exception as error:
 
-        print("Scan error:", error)
+        print(
+            "Scan error:",
+            error
+        )
 
         return jsonify({
-            "success": False,
-            "error": "An unexpected error occurred."
+            "error": "Unable to complete the scan.",
+            "details": str(error)
         }), 500
 
 
+# ---------------------------------------------------------
+# SCAN HISTORY
+# ---------------------------------------------------------
+
 @app.route("/api/scans", methods=["GET"])
-def get_scans():
+def scan_history():
 
-    if "user_id" not in session:
+    user_id = session.get("user_id")
 
+    if not user_id:
         return jsonify({
-            "success": False,
-            "error": "Please log in."
+            "error": "Unauthorized"
         }), 401
 
     try:
 
         scans = get_scan_history(
-            session["user_id"]
+            user_id
         )
 
-        return jsonify({
-            "success": True,
-            "scans": scans
-        })
+        return jsonify(
+            scans
+        ), 200
 
     except Exception as error:
 
-        print("History error:", error)
+        print(
+            "History error:",
+            error
+        )
 
         return jsonify({
-            "success": False,
-            "error": "Could not load scan history."
+            "error": "Unable to load scan history."
         }), 500
 
 
-@app.route("/api/scans/<int:scan_id>", methods=["GET"])
-def get_report(scan_id):
+# ---------------------------------------------------------
+# VIEW ONE SAVED REPORT
+# DELETE ONE SAVED SCAN
+# ---------------------------------------------------------
 
-    if "user_id" not in session:
+@app.route(
+    "/api/scans/<int:scan_id>",
+    methods=["GET", "DELETE"]
+)
+def saved_scan(scan_id):
 
+    user_id = session.get("user_id")
+
+    if not user_id:
         return jsonify({
-            "success": False,
-            "error": "Please log in."
+            "error": "Unauthorized"
         }), 401
 
-    try:
+    # ---------------------------------------------
+    # VIEW REPORT
+    # ---------------------------------------------
+
+    if request.method == "GET":
 
         scan = get_scan_by_id(
-            session["user_id"],
+            user_id,
             scan_id
         )
 
         if not scan:
-
             return jsonify({
-                "success": False,
-                "error": "Scan report not found."
+                "error": "Scan not found."
+            }), 404
+
+        return jsonify(
+            scan
+        ), 200
+
+    # ---------------------------------------------
+    # DELETE SCAN
+    # ---------------------------------------------
+
+    if request.method == "DELETE":
+
+        deleted = delete_scan(
+            user_id,
+            scan_id
+        )
+
+        if not deleted:
+            return jsonify({
+                "error": "Scan not found."
             }), 404
 
         return jsonify({
-            "success": True,
-            "scan": scan
-        })
+            "message": "Scan deleted successfully."
+        }), 200
 
-    except Exception as error:
 
-        print("Report error:", error)
-
-        return jsonify({
-            "success": False,
-            "error": "Could not load report."
-        }), 500
-
+# ---------------------------------------------------------
+# RUN APPLICATION
+# ---------------------------------------------------------
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
+    app.run(
+        host="127.0.0.1",
+        port=5000,
+        debug=True
+    )

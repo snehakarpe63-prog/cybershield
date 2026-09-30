@@ -1,27 +1,26 @@
 import json
-import os
-
 import mysql.connector
+from mysql.connector import Error
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
 
 def get_db_connection():
     return mysql.connector.connect(
-        host=os.getenv("DB_HOST"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME"),
+        host=os.getenv("DB_HOST", "localhost"),
+        user=os.getenv("DB_USER", "root"),
+        password=os.getenv("DB_PASSWORD", ""),
+        database=os.getenv("DB_NAME", "cybershield_db"),
     )
 
 
 def create_user(name, email, password_hash):
     connection = get_db_connection()
+    cursor = connection.cursor()
 
     try:
-        cursor = connection.cursor()
-
         query = """
             INSERT INTO users (name, email, password_hash)
             VALUES (%s, %s, %s)
@@ -43,18 +42,17 @@ def create_user(name, email, password_hash):
 
 def get_user_by_email(email):
     connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
 
     try:
-        cursor = connection.cursor(dictionary=True)
-
         query = """
-            SELECT id, name, email, password_hash
+            SELECT id, name, email, password_hash, created_at
             FROM users
             WHERE email = %s
+            LIMIT 1
         """
 
         cursor.execute(query, (email,))
-
         return cursor.fetchone()
 
     finally:
@@ -62,18 +60,11 @@ def get_user_by_email(email):
         connection.close()
 
 
-def save_scan(
-    user_id,
-    domain,
-    risk_score,
-    risk_level,
-    scan_data
-):
+def save_scan(user_id, domain, risk_score, risk_level, scan_data):
     connection = get_db_connection()
+    cursor = connection.cursor()
 
     try:
-        cursor = connection.cursor()
-
         query = """
             INSERT INTO scans
             (
@@ -86,8 +77,6 @@ def save_scan(
             VALUES (%s, %s, %s, %s, %s)
         """
 
-        scan_json = json.dumps(scan_data)
-
         cursor.execute(
             query,
             (
@@ -95,7 +84,7 @@ def save_scan(
                 domain,
                 risk_score,
                 risk_level,
-                scan_json
+                json.dumps(scan_data)
             )
         )
 
@@ -110,10 +99,9 @@ def save_scan(
 
 def get_scan_history(user_id):
     connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
 
     try:
-        cursor = connection.cursor(dictionary=True)
-
         query = """
             SELECT
                 id,
@@ -127,19 +115,7 @@ def get_scan_history(user_id):
         """
 
         cursor.execute(query, (user_id,))
-
-        scans = cursor.fetchall()
-
-        for scan in scans:
-
-            if scan["scanned_at"]:
-
-                scan["scanned_at"] = (
-                    scan["scanned_at"]
-                    .strftime("%Y-%m-%d %H:%M:%S")
-                )
-
-        return scans
+        return cursor.fetchall()
 
     finally:
         cursor.close()
@@ -148,21 +124,53 @@ def get_scan_history(user_id):
 
 def get_scan_by_id(user_id, scan_id):
     connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
 
     try:
-        cursor = connection.cursor(dictionary=True)
-
         query = """
             SELECT
                 id,
                 domain,
                 risk_score,
                 risk_level,
-                scan_data,
-                scanned_at
+                scanned_at,
+                scan_data
             FROM scans
             WHERE id = %s
-              AND user_id = %s
+            AND user_id = %s
+            LIMIT 1
+        """
+
+        cursor.execute(query, (scan_id, user_id))
+
+        scan = cursor.fetchone()
+
+        if scan and scan.get("scan_data"):
+            if isinstance(scan["scan_data"], str):
+                scan["scan_data"] = json.loads(scan["scan_data"])
+
+        return scan
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+def delete_scan(user_id, scan_id):
+    """
+    Delete only a scan belonging to the logged-in user.
+    Returns True when a scan was deleted.
+    Returns False when no matching scan exists.
+    """
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        query = """
+            DELETE FROM scans
+            WHERE id = %s
+            AND user_id = %s
         """
 
         cursor.execute(
@@ -170,24 +178,9 @@ def get_scan_by_id(user_id, scan_id):
             (scan_id, user_id)
         )
 
-        scan = cursor.fetchone()
+        connection.commit()
 
-        if not scan:
-            return None
-
-        if scan["scanned_at"]:
-            scan["scanned_at"] = (
-                scan["scanned_at"]
-                .strftime("%Y-%m-%d %H:%M:%S")
-            )
-
-        if scan["scan_data"]:
-            if isinstance(scan["scan_data"], str):
-                scan["scan_data"] = json.loads(
-                    scan["scan_data"]
-                )
-
-        return scan
+        return cursor.rowcount > 0
 
     finally:
         cursor.close()
