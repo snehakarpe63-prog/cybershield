@@ -674,6 +674,9 @@
 
 <script>
 
+let currentReportHtml = "";
+let currentReportName = "cybershield-report";
+
 
 /* =========================
    AUTH UI
@@ -1463,10 +1466,7 @@ async function scanDomain() {
 async function loadHistory() {
 
     const history =
-        document.getElementById(
-            "history"
-        );
-
+        document.getElementById("history");
 
     history.innerHTML = `
         <p class="empty">
@@ -1474,21 +1474,11 @@ async function loadHistory() {
         </p>
     `;
 
-
     try {
-
-        const response =
-            await fetch(
-                "/api/scans"
-            );
-
-
-        const data =
-            await response.json();
-
+        const response = await fetch("/api/scans");
+        const data = await response.json();
 
         if (!response.ok) {
-
             history.innerHTML = `
                 <p class="empty">
                     ${escapeHtml(
@@ -1497,90 +1487,114 @@ async function loadHistory() {
                     )}
                 </p>
             `;
-
             return;
         }
 
+        // The current Flask API returns the scan list directly.
+        // This also supports an older {scans: [...]} response.
+        const scans = Array.isArray(data)
+            ? data
+            : (Array.isArray(data.scans) ? data.scans : []);
 
-        if (
-            !data.scans ||
-            data.scans.length === 0
-        ) {
-
+        if (scans.length === 0) {
             history.innerHTML = `
                 <p class="empty">
                     No scans found.
                 </p>
             `;
-
             return;
         }
 
+        history.innerHTML = scans
+            .map(scan => `
+                <div class="history-item">
+                    <div class="history-info">
+                        <strong>${escapeHtml(scan.domain)}</strong>
 
-        history.innerHTML =
-            data.scans
-                .map(
-                    scan => `
-
-                        <div class="history-item">
-
-                            <div class="history-info">
-
-                                <strong>
-                                    ${escapeHtml(
-                                        scan.domain
-                                    )}
-                                </strong>
-
-                                <div>
-                                    Risk Score:
-                                    ${scan.risk_score}
-                                </div>
-
-                                <div>
-                                    Risk Level:
-                                    ${escapeHtml(
-                                        scan.risk_level
-                                    )}
-                                </div>
-
-                                <div>
-                                    Scanned At:
-                                    ${escapeHtml(
-                                        scan.scanned_at
-                                    )}
-                                </div>
-
-                            </div>
-
-
-                            <div class="history-actions">
-
-                                <button
-                                    onclick="viewReport(${scan.id})"
-                                >
-                                    View Report
-                                </button>
-
-                            </div>
-
+                        <div>
+                            Risk Score:
+                            ${escapeHtml(scan.risk_score)}
                         </div>
 
-                    `
-                )
-                .join("");
+                        <div>
+                            Risk Level:
+                            ${escapeHtml(scan.risk_level)}
+                        </div>
 
-    }
-    catch (error) {
+                        <div>
+                            Scanned At:
+                            ${escapeHtml(scan.scanned_at)}
+                        </div>
+                    </div>
+
+                    <div class="history-actions">
+                        <button onclick="viewReport(${Number(scan.id)})">
+                            View Report
+                        </button>
+
+                        <button
+                            class="logout-button"
+                            onclick="deleteScan(${Number(scan.id)})"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `)
+            .join("");
+
+    } catch (error) {
+        console.error("History error:", error);
 
         history.innerHTML = `
             <p class="empty">
                 Could not load scan history.
             </p>
         `;
-
     }
 }
+
+
+async function deleteScan(scanId) {
+
+    const confirmed = window.confirm(
+        "Are you sure you want to delete this scan?"
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/scans/${scanId}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.error || "Could not delete the scan.");
+            return;
+        }
+
+        document
+            .getElementById("scanMessage")
+            .textContent = "Scan deleted successfully.";
+
+        await loadHistory();
+
+        // Close report if the deleted scan was open.
+        closeReport();
+
+    } catch (error) {
+        console.error("Delete error:", error);
+        alert("Could not connect to the server.");
+    }
+}
+
 
 
 /* =========================
@@ -1647,16 +1661,16 @@ async function viewReport(scanId) {
         }
 
 
-        const savedScan =
-            data.scan;
+        // Current Flask API returns the saved scan object directly.
+        // This also supports the older {scan: {...}} response shape.
+        const savedScan = data.scan || data;
 
+        const report = savedScan.scan_data || {};
+        const scan = report.result || savedScan.result;
 
-        const report =
-            savedScan.scan_data;
-
-
-        const scan =
-            report.result;
+        if (!scan) {
+            throw new Error("Saved scan data is missing.");
+        }
 
 
         const recommendations =
@@ -2092,6 +2106,11 @@ async function viewReport(scanId) {
         `;
 
 
+        currentReportHtml = html;
+        currentReportName = `cybershield-report-${
+            String(scan.domain || "scan").replace(/[^a-z0-9.-]/gi, "-")
+        }`;
+
         reportContent.innerHTML = html;
 
     }
@@ -2112,6 +2131,50 @@ async function viewReport(scanId) {
 }
 
 
+async function downloadReport() {
+
+    if (!currentReportHtml) {
+        alert("Open a saved report first.");
+        return;
+    }
+
+    const fullDocument = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberShield Report</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:1000px;margin:30px auto;padding:20px;color:#1f2937;background:#f3f6fa}
+.report-header,.report-item,.recommendation,.finding,.limitation{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-top:15px}
+.report-header{background:#111827;color:#fff}
+.good{color:#166534;font-weight:bold}.warning{color:#92400e;font-weight:bold}.info{color:#1d4ed8;font-weight:bold}
+</style>
+</head>
+<body>
+<h1>CyberShield Security Report</h1>
+${currentReportHtml}
+</body>
+</html>`;
+
+    const blob = new Blob(
+        [fullDocument],
+        { type: "text/html;charset=utf-8" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `${currentReportName}.html`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+}
+
+
 /* =========================
    CLOSE REPORT
 ========================= */
@@ -2122,6 +2185,9 @@ function closeReport() {
     document
         .getElementById("reportSection")
         .classList.add("hidden");
+
+    currentReportHtml = "";
+    currentReportName = "cybershield-report";
 
 }
 
